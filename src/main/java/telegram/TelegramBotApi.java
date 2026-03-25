@@ -67,7 +67,7 @@ public class TelegramBotApi {
 
     }
 
-    public Path downloadAudio(String fileId, Path audioPath) throws IOException, InterruptedException {
+    public void downloadAudio(String fileId, Path audioPath) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_BASE + token + "/getFile?file_id=" + fileId))
                 .GET()
@@ -76,7 +76,7 @@ public class TelegramBotApi {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Error downloading audio. HTTP " + response.statusCode());
+            throw new RuntimeException("Error fetching audio. HTTP " + response.statusCode());
         }
 
         GetFile file = gson.fromJson(response.body(), GetFile.class);
@@ -88,7 +88,9 @@ public class TelegramBotApi {
 
         HttpResponse<Path> responseAudio = client.send(request, HttpResponse.BodyHandlers.ofFile(audioPath));
 
-        return audioPath;
+        if (responseAudio.statusCode() != 200) {
+            throw new RuntimeException("Error downloading audio. HTTP " + responseAudio.statusCode());
+        }
 
     }
 }

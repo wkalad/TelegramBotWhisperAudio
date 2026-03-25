@@ -24,9 +24,7 @@ public class Main {
             api.getUpdates(updateId[0] + 1).forEach(n -> {
                 try {
                     updateId[0] = processMessage(api, n, audioFile, jsonFile);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (InterruptedException e) {
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             });
@@ -37,7 +35,7 @@ public class Main {
 
         if (n.message().voice() != null) {
 
-            Path path = api.downloadAudio(n.message().voice().file_id(), audioFile);
+            api.downloadAudio(n.message().voice().file_id(), audioFile);
 
             WhisperApi whisper = new WhisperApi();
 
