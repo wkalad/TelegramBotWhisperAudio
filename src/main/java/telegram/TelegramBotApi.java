@@ -1,10 +1,7 @@
 package telegram;
 
 import com.google.gson.Gson;
-import dto.GetFile;
-import dto.Result;
-import dto.SendMessageResponse;
-import dto.Update;
+import dto.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,8 +48,13 @@ public class TelegramBotApi {
 
     public void sendMessage(String message, String chatId) throws IOException, InterruptedException {
 
+        SendMessagePost sendMessagePost = new SendMessagePost(chatId, message);
 
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_BASE + token + "/sendMessage")).POST(HttpRequest.BodyPublishers.ofString("{\"chat_id\":" + chatId + ", \"text\": \"" + message + "\"}")).setHeader("Content-Type", "application/json").build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE + token + "/sendMessage"))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(sendMessagePost)))
+                .setHeader("Content-Type", "application/json")
+                .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() != 200) {
