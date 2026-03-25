@@ -1,0 +1,100 @@
+package telegram;
+
+import com.google.gson.Gson;
+import dto.GetFile;
+import dto.Result;
+import dto.SendMessageResponse;
+import dto.Update;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Path;
+import java.util.List;
+
+public class TelegramBotApi {
+
+    private final String API_BASE = "https://api.telegram.org/bot";
+    private final String API_BASE_FILE = "https://api.telegram.org/file/bot";
+    private final String token;
+    private final Gson gson;
+    private final HttpClient client;
+    private Path audioPath;
+
+    public TelegramBotApi(String token){
+        client = HttpClient.newHttpClient();
+        this.token = token;
+        gson = new Gson();
+        audioPath = Path.of("audios").resolve("audio.oga");
+    }
+
+    public List<Update> getUpdates(int offset) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE+token+"/getUpdates?offset="+offset))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if(response.statusCode() != 200){
+            throw new RuntimeException("getUpdates HTTP " + response.statusCode());
+        }
+
+        Result result = gson.fromJson(response.body(), Result.class);
+
+        if (!result.ok()){
+            throw new RuntimeException("getUpdates ErrorApi " + result);
+        }
+
+        return result.result();
+    }
+
+    public void sendMessage(String message, String chatId) throws IOException, InterruptedException {
+
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE+token+"/sendMessage"))
+                .POST(HttpRequest.BodyPublishers.ofString("{\"chat_id\":" + chatId + ", \"text\": \"" + message + "\"}"))
+                .setHeader("Content-Type", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if(response.statusCode() != 200){
+            throw new RuntimeException("sendMessage HTTP " + response.statusCode());
+        }
+
+        SendMessageResponse sendMessageResponse = gson.fromJson(response.body(), SendMessageResponse.class);
+
+        if (!sendMessageResponse.ok()){
+            throw new RuntimeException("sendMessage ErrorApi " + sendMessageResponse);
+        }
+
+    }
+
+    public Path downloadAudio(String fileId) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE + token + "/getFile?file_id=" + fileId))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if(response.statusCode() != 200){
+            throw new RuntimeException("Error downloading audio. HTTP " + response.statusCode());
+        }
+
+        GetFile file = gson.fromJson(response.body(), GetFile.class);
+
+        request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE_FILE + token + "/" + file.result().file_path()))
+                .GET()
+                .build();
+
+        HttpResponse<Path> responseAudio = client.send(request, HttpResponse.BodyHandlers.ofFile(audioPath));
+
+        return audioPath;
+
+    }
+}
