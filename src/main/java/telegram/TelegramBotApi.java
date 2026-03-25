@@ -21,13 +21,11 @@ public class TelegramBotApi {
     private final String token;
     private final Gson gson;
     private final HttpClient client;
-    private Path audioPath;
 
-    public TelegramBotApi(String token){
+    public TelegramBotApi(String token) {
         client = HttpClient.newHttpClient();
         this.token = token;
         gson = new Gson();
-        audioPath = Path.of("audios").resolve("audio.oga");
     }
 
     public List<Update> getUpdates(int offset) throws IOException, InterruptedException {
@@ -38,13 +36,13 @@ public class TelegramBotApi {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if(response.statusCode() != 200){
+        if (response.statusCode() != 200) {
             throw new RuntimeException("getUpdates HTTP " + response.statusCode());
         }
 
         Result result = gson.fromJson(response.body(), Result.class);
 
-        if (!result.ok()){
+        if (!result.ok()) {
             throw new RuntimeException("getUpdates ErrorApi " + result);
         }
 
@@ -54,26 +52,22 @@ public class TelegramBotApi {
     public void sendMessage(String message, String chatId) throws IOException, InterruptedException {
 
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_BASE+token+"/sendMessage"))
-                .POST(HttpRequest.BodyPublishers.ofString("{\"chat_id\":" + chatId + ", \"text\": \"" + message + "\"}"))
-                .setHeader("Content-Type", "application/json")
-                .build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_BASE + token + "/sendMessage")).POST(HttpRequest.BodyPublishers.ofString("{\"chat_id\":" + chatId + ", \"text\": \"" + message + "\"}")).setHeader("Content-Type", "application/json").build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if(response.statusCode() != 200){
+        if (response.statusCode() != 200) {
             throw new RuntimeException("sendMessage HTTP " + response.statusCode());
         }
 
         SendMessageResponse sendMessageResponse = gson.fromJson(response.body(), SendMessageResponse.class);
 
-        if (!sendMessageResponse.ok()){
+        if (!sendMessageResponse.ok()) {
             throw new RuntimeException("sendMessage ErrorApi " + sendMessageResponse);
         }
 
     }
 
-    public Path downloadAudio(String fileId) throws IOException, InterruptedException {
+    public Path downloadAudio(String fileId, Path audioPath) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_BASE + token + "/getFile?file_id=" + fileId))
                 .GET()
@@ -81,7 +75,7 @@ public class TelegramBotApi {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        if(response.statusCode() != 200){
+        if (response.statusCode() != 200) {
             throw new RuntimeException("Error downloading audio. HTTP " + response.statusCode());
         }
 

@@ -3,52 +3,34 @@ package app;
 import com.google.gson.Gson;
 import dto.WhisperResult;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class WhisperApi {
 
-    ProcessBuilder builder;
+    private final ProcessBuilder builder;
+    private final Gson gson;
 
-
-    public WhisperApi(){
+    public WhisperApi() {
         builder = new ProcessBuilder();
-
+        gson = new Gson();
 
     }
 
+    public String transcribe(Path audioFile, Path jsonFile) throws IOException, InterruptedException {
 
-    public String transcribe(Path path) throws IOException, InterruptedException {
-
-        builder.command("cmd.exe", "/c", "whisper " + path.toAbsolutePath() + " --model small --language Castilian --output_format json --output_dir .\\audios");
+        builder.command("cmd.exe", "/c", "whisper " + audioFile.toAbsolutePath() + " --model small --output_format json --output_dir .\\audios");
 
         Process process = builder.start();
-        /*
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()));
-        String text = "";
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
-            text = text + line;
-        }
-        */
 
         int exitCode = process.waitFor();
 
-        if(exitCode != 0){
+        if (exitCode != 0) {
             throw new RuntimeException("Whisper Error, Code: " + exitCode);
         }
 
-        Path jsonPath = Paths.get(".\\audios", "audio.json");
-
-        String jsonContent = Files.readString(jsonPath);
-
-        Gson gson = new Gson();
+        String jsonContent = Files.readString(jsonFile);
 
         WhisperResult whisperResult = gson.fromJson(jsonContent, WhisperResult.class);
 
@@ -56,7 +38,6 @@ public class WhisperApi {
 
 
     }
-
 
 
 }
