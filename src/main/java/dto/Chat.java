@@ -1,4 +1,4 @@
 package dto;
 
-public record Chat(int id) {
+public record Chat(long id) {
 }

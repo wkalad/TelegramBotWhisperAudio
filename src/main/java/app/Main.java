@@ -24,14 +24,18 @@ public class Main {
             api.getUpdates(updateId[0] + 1).forEach(n -> {
                 try {
                     updateId[0] = processMessage(api, n, audioFile, jsonFile);
-                } catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                } catch (Throwable t) {
+                    System.err.println("Process Message Error: " + t);
                 }
             });
         }
     }
 
     private static int processMessage(TelegramBotApi api, Update n, Path audioFile, Path jsonFile) throws IOException, InterruptedException {
+
+        if (n.message() == null){
+            return n.update_id();
+        }
 
         if (n.message().voice() != null) {
 
