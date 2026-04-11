@@ -18,9 +18,9 @@ public class WhisperApi {
 
     }
 
-    public String transcribe(Path audioFile, Path jsonFile) throws IOException, InterruptedException {
+    public String transcribe(Path audioFile, Path jsonFile, String model, String language) throws IOException, InterruptedException {
 
-        builder.command("cmd.exe", "/c", "whisper " + audioFile.toAbsolutePath() + " --model small --output_format json --output_dir .\\audios");
+        builder.command("cmd.exe", "/c", "whisper " + audioFile.toAbsolutePath() + " --model " + model  + " --language " + language + " --output_format json --output_dir .\\audios");
 
         Process process = builder.start();
 
