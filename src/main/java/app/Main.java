@@ -61,7 +61,8 @@ public class Main {
 
             String t = whisper.transcribe(audioFile, jsonFile, model, language);
 
-            api.sendMessage(t, String.valueOf(n.message().chat().id()), n.message().message_id());
+            //api.sendMessage(t, String.valueOf(n.message().chat().id()), n.message().message_id());
+            api.forwardMessageCaption(String.valueOf(n.message().chat().id()), n.message().chat().id(), n.message().message_id(), t);
 
         } else {
             String message = "Send me an audio and I will transcribe it \uD83D\uDC4D";

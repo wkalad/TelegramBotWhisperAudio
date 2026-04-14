@@ -92,6 +92,28 @@ public class TelegramBotApi {
 
     }
 
+    public void forwardMessageCaption(String chatId, long fromChatId, long messageId, String caption) throws IOException, InterruptedException {
+
+        ForwardMessage forwardMessage = new ForwardMessage(chatId, fromChatId, messageId, caption);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_BASE + token + "/copyMessage"))
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(forwardMessage)))
+                .setHeader("Content-Type", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("sendMessage HTTP " + response.statusCode());
+        }
+
+        SendMessageResponse sendMessageResponse = gson.fromJson(response.body(), SendMessageResponse.class);
+
+        if (!sendMessageResponse.ok()) {
+            throw new RuntimeException("sendMessage ErrorApi " + sendMessageResponse);
+        }
+    }
+
     public void downloadAudio(String fileId, Path audioPath) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_BASE + token + "/getFile?file_id=" + fileId))
